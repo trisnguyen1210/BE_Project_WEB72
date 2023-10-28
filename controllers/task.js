@@ -1,5 +1,6 @@
 import { TasksModel } from '../models/taskDB.js';
 import joi from 'joi';
+import { VideoModel } from '../models/videos.js';
 
 export class TasksController {
     async getAllTasks(req, res) {
@@ -9,6 +10,47 @@ export class TasksController {
             return res.status(200).json({ message: "success", Tasks: result })
         } catch (error) {
             return res.status(404).json({ message: `404 not found` })
+        }
+    }
+
+    async getAllVideos(req, res) {
+        try {
+            console.log(`CheckAllVideo`);
+            const result = await VideoModel.find()
+            return res.status(200).json({ message: "success", videos: result })
+        } catch (error) {
+            return res.status(404).json({ message: `Can't found video` })
+        }
+    }
+
+    async addNewVideo(req, res) {
+        try {
+            console.log(`AddNewVideo ${req.body.titleVideo}`)
+            const titleVideo = req.body.titleVideo;
+            const linkVideo = req.body.linkVideo;
+            const thumbnail = req.body.thumbnail;
+            const tag = req.body.tagVideo;
+            const videoSchema = joi.object({
+                titleVideo: joi.string().required().max(100).messages({
+                    "string.max": "Title nhỏ hơn 100 kí tự",
+                    "any.require": "Không được để trống title video"
+                }),
+                linkVideo: joi.string().required().min(10).messages({
+                    "string.min": "Link quá ngắn",
+                    "any.require": "Không được để trống link video"
+                })
+            })
+            const validate = videoSchema.validate({ titleVideo, linkVideo })
+            if (validate.error) {
+                console.log(validate.error)
+                return res.status(400).json({ error: validate })
+            }
+
+            const result = VideoModel.create({ titleVideo, linkVideo, thumbnail, tag })
+            return res.status(200).json({ message: "success", videoNew: result })
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({ message: "fail", error: error })
         }
     }
 
