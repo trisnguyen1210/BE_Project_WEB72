@@ -1,9 +1,10 @@
 import express from 'express';
-import { TasksController } from '../controllers/task.js';
-
+import { VideosController } from '../controllers/videos.js'
 const router = express.Router()
-const taskController = new TasksController
-router.get("/", taskController.getAllVideos)
-router.post("/addVideo", taskController.addNewVideo)
+const videosController = new VideosController
+router.get("/", videosController.getAllVideos)
+router.post("/addVideo", videosController.addNewVideo)
+router.get("/get-paging-video-admin", videosController.getPagingVideo)
+router.get("/id/:id", videosController.getVideoId)
 
 export default router;

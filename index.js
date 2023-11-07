@@ -9,6 +9,7 @@ import router from './routers/index.js';
 import dotenv from 'dotenv'
 //DB
 import connectToDB from './database/index.js';
+import fileUpload from 'express-fileupload';
 
 const app = express();
 const port = 3000;
@@ -17,11 +18,12 @@ dotenv.config();
 
 app.use(morgan("combined"))
 app.use(cors({ origin: "*" }))
-app.use(express.json());
+app.use(fileUpload())
+app.use(express.json())
+connectToDB()
 app.use(logMiddleWare)
 app.use(router)
 
-connectToDB()
 
 app.listen(port, () => {
     console.log(`Ứng dụng đang lắng nghe tại http://localhost:${port}`);

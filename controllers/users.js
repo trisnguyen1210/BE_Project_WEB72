@@ -1,4 +1,3 @@
-import { users } from '../data/index.js';
 //JsonWebtoken
 import jwt from 'jsonwebtoken'
 import joi from 'joi'
@@ -141,10 +140,11 @@ export class RolesController {
     }
 }
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const checkExist = users.find(item => item.username === username)
+    const checkExist = await UsersModel.findOne({ "username": username })
+
     if (!checkExist) {
         return res.status(404).json({ message: `Can't found user` })
     }
