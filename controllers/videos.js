@@ -22,6 +22,7 @@ export class VideosController {
             const thumbnailVideo = req.files.thumbnailVideo;
             const contentVideo = req.body.contentVideo;
             const tagVideo = req.body.tagVideo.split(',');
+            const createBy = req.body.createBy;
             const videoSchema = joi.object({
                 titleVideo: joi.string().required().max(100).messages({
                     "string.max": "Title nhỏ hơn 100 kí tự",
@@ -38,7 +39,7 @@ export class VideosController {
                 return res.status(400).json({ error: validate })
             }
             const uploadFile = await uploadImage(thumbnailVideo)
-            const result = await VideoModel.create({ titleVideo, linkVideo, contentVideo, tagVideo, thumbnailVideo: uploadFile })
+            const result = await VideoModel.create({ titleVideo, linkVideo, contentVideo, tagVideo, thumbnailVideo: uploadFile, createBy })
             return res.status(200).json({ message: "success", videoNew: result })
         } catch (error) {
             console.log(error)

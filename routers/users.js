@@ -6,7 +6,7 @@ const router = express.Router();
 const usersController = new UsersController();
 const rolesController = new RolesController();
 
-router.get("/", checkAuthentication, checkAuthorization("user", "write"), usersController.getAllUsers);
+router.get("/", usersController.getAllUsers);
 router.get("/roles", checkAuthentication, checkAuthorization("user", "write"), rolesController.getAllRoles);
 router.post("/newuser", checkAuthentication, checkAuthorization("user", "write"), usersController.createNewUser);
 router.put("/updateuser/:id", usersController.updateUser)
