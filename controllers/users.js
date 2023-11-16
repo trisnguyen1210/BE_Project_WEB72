@@ -2,9 +2,10 @@
 import jwt from 'jsonwebtoken'
 import joi from 'joi'
 //Models
-import { UsersModel } from '../models/userDB.js';
-import { RolesModel } from '../models/roleDB.js';
+import { UsersModel } from '../models/user.js';
+import { RolesModel } from '../models/role.js';
 import bcryptjs from 'bcryptjs';
+import { LogsModel } from '../models/logs.js';
 
 export class UsersController {
     async getAllUsers(req, res) {
@@ -14,6 +15,19 @@ export class UsersController {
             return res.status(200).json({ message: "success", Info: result })
         } catch (error) {
             return res.status(500).json(error)
+        }
+    }
+
+    async getPagingUser(req, res) {
+        try {
+            const pageSize = req.query.pageSize;
+            const pageIndex = req.query.pageIndex;
+            const users = await UsersModel.find().skip(pageSize * pageIndex - pageSize).limit(pageSize)
+            const count = await UsersModel.countDocuments()
+            const totalPage = Math.ceil(count / pageSize)
+            return res.status(200).json({ message: 'success', Info: { users, count, totalPage } })
+        } catch (error) {
+            return res.status(400).json({ message: "error", Info: error })
         }
     }
 
@@ -71,9 +85,10 @@ export class UsersController {
     async updateUser(req, res) {
         try {
             const id = req.params.id;
-            const username = req.body.username;
-            const password = req.body.password;
-            const role = req.body.role;
+            const username = req.body.inputValues.username;
+            const password = req.body.inputValues.password;
+            const role = req.body.inputValues.role;
+            const userNow = req.body.userNow;
             const userSchema = joi.object({
                 username: joi.string().required().min(3).max(100).messages({
                     "string.min": "3 kí tự trở lên",
@@ -91,11 +106,13 @@ export class UsersController {
                 console.log(validate.error)
                 return res.status(400).json({ error: validate })
             }
-            console.log(`update user ${user}`)
-            const user = await UsersModel.findOneAndUpdate({ _id: id }, {
+            const result = await UsersModel.findOneAndUpdate({ _id: id }, {
                 username, password, role
             }, { new: true })
-            return res.status(200).json({ message: "success", updateUser: user })
+            if (result) {
+                const addLog = await LogsModel.create({ username, log: `${userNow} update data ${result}` })
+            }
+            return res.status(200).json({ message: "success", Info: result })
         } catch (error) {
             console.log(error)
             return res.status(400).json({ error: error.message || "Failed" })
@@ -143,8 +160,8 @@ export class RolesController {
 export const login = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
+    const addLog = await LogsModel.create({ username: username, log: `${username} login success` })
     const checkExist = await UsersModel.findOne({ "username": username })
-
     if (!checkExist) {
         return res.status(404).json({ message: `Can't found user` })
     }

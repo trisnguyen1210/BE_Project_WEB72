@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const Video = mongoose.Schema({
+const VideosSchema = mongoose.Schema({
     titleVideo: { type: String, required: true },
     linkVideo: { type: String, required: true },
     thumbnailVideo: { type: Object, required: true },
@@ -9,4 +9,4 @@ const Video = mongoose.Schema({
     contentVideo: { type: String }
 }, { timestamps: true })
 
-export const VideoModel = mongoose.model("videos", Video)
+export const VideoModel = mongoose.model("videos", VideosSchema, 'videos', { autoCreate: false })

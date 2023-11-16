@@ -2,6 +2,8 @@ import { TasksModel } from '../models/taskDB.js';
 import joi from 'joi';
 import { VideoModel } from '../models/videos.js';
 import { uploadImage } from '../cloudinary/index.js';
+import { LogsModel } from '../models/logs.js';
+import mongoose from 'mongoose';
 
 export class VideosController {
     async getAllVideos(req, res) {
@@ -16,7 +18,6 @@ export class VideosController {
 
     async addNewVideo(req, res) {
         try {
-            console.log(`AddNewVideo ${req.body.titleVideo}`);
             const titleVideo = req.body.titleVideo;
             const linkVideo = req.body.URL;
             const thumbnailVideo = req.files.thumbnailVideo;
@@ -40,6 +41,7 @@ export class VideosController {
             }
             const uploadFile = await uploadImage(thumbnailVideo)
             const result = await VideoModel.create({ titleVideo, linkVideo, contentVideo, tagVideo, thumbnailVideo: uploadFile, createBy })
+            const addLog = await LogsModel.create({ username: createBy, log: `${createBy} create video ${titleVideo}` })
             return res.status(200).json({ message: "success", videoNew: result })
         } catch (error) {
             console.log(error)
@@ -59,6 +61,59 @@ export class VideosController {
             return res.status(400).json({ message: "fail", Info: error })
         }
     }
+
+    async getVideoId(req, res) {
+        try {
+            const id = req.params.id;
+            const result = await VideoModel.find({ _id: id })
+            return res.status(200).json({ message: 'success', Info: result })
+        } catch (error) {
+            console.log(error)
+            return res.status(404).json({ message: 'can\'t found video' })
+        }
+    }
+
+    async updateVideo(req, res) {
+        try {
+            const id = req.params.id;
+            const titleVideo = req.body.titleVideo;
+            const linkVideo = req.body.URL;
+            const contentVideo = req.body.contentVideo;
+            const tagVideo = req.body.tagVideo.split(',');
+            const createBy = req.body.createBy;
+            const thumbnailVideo = req?.files?.thumbnailVideo;
+            let dataUpdate = {
+                titleVideo, linkVideo, contentVideo, tagVideo, createBy
+            }
+            if (thumbnailVideo) {
+                const upload = await uploadImage(thumbnailVideo);
+                dataUpdate = { ...dataUpdate, thumbnailVideo: upload };
+            }
+            const result = await VideoModel.findOneAndUpdate({ _id: id }, dataUpdate, { new: true });
+            const addLog = await LogsModel.create({ username: createBy, log: `${createBy} thay đổi thông tin video ${id}` })
+            return res.status(200).json({ message: 'success', Info: result })
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({ message: 'fail', Info: error })
+
+        }
+    }
+
+    async deleteVideo(req, res) {
+        console.log(req.body)
+        try {
+            const id = req.params.id;
+            const username = req.body.username;
+            const video = req.body.video;
+            const result = await VideoModel.findOneAndDelete({ _id: id });
+            const addLog = await LogsModel.create({ username: username, log: `${username} delete video ${video}` })
+            return res.status(200).json({ message: "success", Info: result })
+        } catch (error) {
+            console.log(error)
+            return res.status(400).json({ error: error.message || "Failed" })
+        }
+    }
+
 
     async createTask(req, res) {
         try {
@@ -88,16 +143,6 @@ export class VideosController {
         }
     }
 
-    async getVideoId(req, res) {
-        try {
-            const id = req.params.id;
-            const result = await VideoModel.find({ _id: id })
-            return res.status(200).json({ message: 'success', Info: result })
-        } catch (error) {
-            console.log(error)
-            return res.status(404).json({ message: 'can\'t found video' })
-        }
-    }
 
     async getPagingProduct(req, res) {
         try {
