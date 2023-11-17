@@ -6,12 +6,12 @@ const router = express.Router();
 const usersController = new UsersController();
 const rolesController = new RolesController();
 
-router.get("/", usersController.getPagingUser)
-router.get("/all", usersController.getAllUsers);
+router.get("/", checkAuthentication, usersController.getPagingUser)
+router.get("/all", checkAuthentication, usersController.getAllUsers);
 router.get("/roles", checkAuthentication, checkAuthorization("user", "write"), rolesController.getAllRoles);
 router.post("/newuser", checkAuthentication, checkAuthorization("user", "write"), usersController.createNewUser);
-router.put("/updateuser/:id", usersController.updateUser)
-router.delete("/deleteuser/:id", usersController.deleteUser)
+router.put("/updateuser/:id",checkAuthentication, usersController.updateUser)
+router.delete("/deleteuser/:id",checkAuthentication, usersController.deleteUser)
 router.get("/roles/:rank", rolesController.getInfoRole)
 router.get("/:id", usersController.getInfoUsers);
 

@@ -51,7 +51,6 @@ export class UsersController {
             const hashPassword = bcryptjs.hashSync(password, salt)
             const role = req.body.role;
             const userCheck = await UsersModel.findOne({ username })
-            console.log(userCheck)
             if (userCheck) {
                 return res.status(400).json({ message: "Người dùng đã tồn tại" })
             }

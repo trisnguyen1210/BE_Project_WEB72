@@ -2,9 +2,7 @@ import { roles, users } from "../data/index.js";
 import jwt from 'jsonwebtoken';
 
 export const checkAuthentication = (req, res, next) => {
-    // const bearerToken = req.headers.authentication;
-    const bearerToken = req.headers.authorization
-    // console.log(bearerToken)
+    const bearerToken = req.headers.authorization;
     if (!bearerToken) {
         return res.status(401).json({ message: `Bạn chưa đăng nhập` })
     }
