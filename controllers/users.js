@@ -159,12 +159,15 @@ export class RolesController {
 export const login = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
+    const salt = bcryptjs.genSaltSync()
+    const hashPassword = bcryptjs.hashSync(password, salt)
+
     const addLog = await LogsModel.create({ username: username, log: `${username} login success` })
     const checkExist = await UsersModel.findOne({ "username": username })
     if (!checkExist) {
         return res.status(404).json({ message: `Can't found user` })
     }
-    if (!(checkExist.password == password)) {
+    if (!(checkExist.password == hashPassword)) {
         return res.status(401).json({ message: `Wrong password` })
     }
 
