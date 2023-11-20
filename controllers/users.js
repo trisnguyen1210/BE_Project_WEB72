@@ -159,25 +159,24 @@ export class RolesController {
 export const login = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const salt = bcryptjs.genSaltSync()
-    const hashPassword = bcryptjs.hashSync(password, salt)
-
-    const addLog = await LogsModel.create({ username: username, log: `${username} login success` })
     const checkExist = await UsersModel.findOne({ "username": username })
     if (!checkExist) {
         return res.status(404).json({ message: `Can't found user` })
     }
-    if (!(checkExist.password == hashPassword)) {
-        return res.status(401).json({ message: `Wrong password` })
-    }
-
-    const token = jwt.sign({
-        id: checkExist.id
-    }, process.env.JWT_SECRET_KEY, {
-        expiresIn: '1d'
+    const checkPass = bcryptjs.compare(password, checkExist.password, async (error, result) => {
+        if (error) {
+            return res.status(401).json({ message: `Wrong password` })
+        }
+        if (result) {
+            const token = jwt.sign({
+                id: checkExist.id
+            }, process.env.JWT_SECRET_KEY, {
+                expiresIn: '1d'
+            })
+            const addLog = await LogsModel.create({ username: username, log: `${username} login success` })
+            return res.status(200).json({ user: checkExist, token: token })
+        }
     })
-
-    return res.status(200).json({ user: checkExist, token: token })
 }
 
 export const signUp = async (req, res) => {
