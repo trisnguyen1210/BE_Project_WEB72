@@ -176,6 +176,7 @@ export const login = async (req, res) => {
             const addLog = await LogsModel.create({ username: username, log: `${username} login success` })
             return res.status(200).json({ user: checkExist, token: token })
         }
+        return res.status(401).json({ message: `Wrong password` })
     })
 }
 
